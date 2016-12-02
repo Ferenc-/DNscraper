@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import requests
 from lxml import html
 # from bs4 import BeautifulSoup
@@ -11,7 +12,7 @@ LOGIN_URL = 'https://www.dijnet.hu/ekonto/control/login'
 URL = 'https://www.dijnet.hu/ekonto/login/login_check_password'
 
 
-def main():
+def do_scraping(username, password):
     session_requests = requests.session()
     # Get login authenticity token
     result = session_requests.get(LOGIN_URL)
@@ -25,8 +26,8 @@ def main():
     # Create payload
     payload = {
             'vfw_form': authenticity_token,
-            'username': '',
-            'password': ''
+            'username': username,
+            'password': password
             }
     # Perform login
     result = session_requests.post(
@@ -39,9 +40,18 @@ def main():
 
     tree = html.document_fromstring(result.content, parser=parser)
     print(tree.xpath("//input[@name='vfw_form']/@value"))
-    # for e in tree.iter():
-    #     print("%s - %s" % (e.tag, e.text))
+    for e in tree.iter():
+        print("%s - %s" % (e.tag, e.text))
     # print(login_info)
+
+
+def main():
+    parser = argparse.ArgumentParser(description='DNScraper')
+    parser.add_argument('-p', '--password')
+    parser.add_argument('-u', '--username')
+    args = parser.parse_args()
+
+    do_scraping(args.username, args.password)
 
 
 if __name__ == '__main__':
